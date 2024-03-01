@@ -40,6 +40,6 @@ out/
 output/logs
 
 
-# backend-kotlin/uploads/**
+backend-kotlin/uploads/**
 
 .DS_Store
