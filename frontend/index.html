@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Image lotated test</h1>
+    <h2>なにもしないパターン</h2>
+    <div>
+      <input type="file" id="defaultImageUpload" accept="image/*" />
+    </div>
+    <div>
+      <h3>画像としての表示</h3>
+      <img
+        id="defaultImagePreview"
+        alt="Image preview..."
+        width="300"
+        height="300"
+      />
+    </div>
+    <div id="defaultView">
+      <h3>PDF viewer</h3>
+    </div>
+
+    <h2>画像回転パターン</h2>
+    <div>
+      <input type="file" id="rotateImageUpload" accept="image/*" />
+    </div>
+    <div>
+      <h3>画像としての表示</h3>
+      <img
+        id="rotateImagePreview"
+        alt="Image preview..."
+        width="300"
+        height="300"
+      />
+    </div>
+    <div id="rotateView">
+      <h3>PDF viewer</h3>
+    </div>
+
+    <script src="./app.ts"></script>
+  </body>
+</html>
