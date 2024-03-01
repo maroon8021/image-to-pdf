@@ -21,35 +21,17 @@ server.post("/api/upload", async (request, reply) => {
     if (!data) {
       reply.status(400).send("No file uploaded");
     }
-    const rawbuffer = await data?.toBuffer();
-    if (!rawbuffer) {
-      throw new Error("no buffer");
-    }
-
-    const buffer = exifremove.remove(rawbuffer);
+    const buffer = await data?.toBuffer();
     const fileType = getFileType(data?.mimetype as string);
-
-    const rotatedImage = await sharp(rawbuffer).rotate().toBuffer();
 
     if (buffer) {
       fs.writeFileSync(`image.${fileType}`, buffer);
-      fs.writeFileSync(`rotated-image.${fileType}`, rotatedImage);
     } else {
       reply.status(400).send("No file uploaded");
       return;
     }
 
-    // to pdf
-    const pdfDoc = await PDFDocument.create();
-    const image = await getEmbedImage(pdfDoc, rotatedImage, fileType);
-    const page = pdfDoc.addPage([image.width, image.height]);
-    page.drawImage(image, {
-      x: 0,
-      y: 0,
-      width: image.width,
-      height: image.height,
-    });
-    const pdfBytes = await pdfDoc.save();
+    const pdfBytes = await createPdf(buffer, fileType);
 
     fs.writeFileSync("imagepdf.pdf", pdfBytes);
     reply.header("Content-Type", "application/pdf");
@@ -58,6 +40,47 @@ server.post("/api/upload", async (request, reply) => {
     console.log(error);
   }
 });
+
+server.post("/api/rotate-upload", async (request, reply) => {
+  try {
+    const data = await request.file();
+    if (!data) {
+      reply.status(400).send("No file uploaded");
+    }
+    const rawbuffer = await data?.toBuffer();
+    const fileType = getFileType(data?.mimetype as string);
+
+    const rotatedImage = await sharp(rawbuffer).rotate().toBuffer();
+
+    if (rotatedImage) {
+      fs.writeFileSync(`rotated-image.${fileType}`, rotatedImage);
+    } else {
+      reply.status(400).send("No file uploaded");
+      return;
+    }
+
+    const pdfBytes = await createPdf(rotatedImage, fileType);
+
+    fs.writeFileSync("rotated-imagepdf.pdf", pdfBytes);
+    reply.header("Content-Type", "application/pdf");
+    reply.send(pdfBytes);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+const createPdf = async (buffer: Buffer, fileType: string) => {
+  const pdfDoc = await PDFDocument.create();
+  const image = await getEmbedImage(pdfDoc, buffer, fileType);
+  const page = pdfDoc.addPage([image.width, image.height]);
+  page.drawImage(image, {
+    x: 0,
+    y: 0,
+    width: image.width,
+    height: image.height,
+  });
+  return await pdfDoc.save();
+};
 
 const getFileType = (mineType: string) => {
   switch (mineType) {
